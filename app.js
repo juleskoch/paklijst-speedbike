@@ -1,8 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import {
+  browserLocalPersistence,
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  setPersistence,
   signInWithEmailAndPassword,
   signOut,
 } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
@@ -60,12 +62,25 @@ let authMessage = "";
 
 let state = loadState();
 
-createAuthPanel();
-render();
-bindEvents();
-bindAuthEvents();
-watchAuth();
-registerServiceWorker();
+startApp();
+
+async function startApp() {
+  createAuthPanel();
+  render();
+  bindEvents();
+  bindAuthEvents();
+  await enablePersistentLogin();
+  watchAuth();
+  registerServiceWorker();
+}
+
+async function enablePersistentLogin() {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+  } catch {
+    authMessage = "Ingelogd blijven kon niet worden ingesteld op dit apparaat.";
+  }
+}
 
 function loadState() {
   try {
