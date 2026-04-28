@@ -80,6 +80,10 @@ function loadState() {
     localStorage.removeItem(STORAGE_KEY);
   }
 
+  return createDefaultState();
+}
+
+function createDefaultState() {
   const summerId = createId();
   const winterId = createId();
   return {
@@ -261,6 +265,8 @@ function watchAuth() {
 
     if (!user) {
       userDocRef = null;
+      state = createDefaultState();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       render();
       return;
     }
