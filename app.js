@@ -33,11 +33,13 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const dom = {
+  appShell: document.querySelector(".app-shell"),
   tabs: document.getElementById("tabs"),
   categories: document.getElementById("categories"),
   activeTabTitle: document.getElementById("activeTabTitle"),
   progressText: document.getElementById("progressText"),
   progressBar: document.getElementById("progressBar"),
+  editModeBtn: document.getElementById("editModeBtn"),
   addTabBtn: document.getElementById("addTabBtn"),
   editTabBtn: document.getElementById("editTabBtn"),
   duplicateTabBtn: document.getElementById("duplicateTabBtn"),
@@ -58,6 +60,7 @@ const dom = {
 
 let sheetSubmit = null;
 let pendingMove = null;
+let isEditMode = false;
 let user = null;
 let userDocRef = null;
 let unsubscribeCloud = null;
@@ -186,6 +189,7 @@ function saveState() {
 }
 
 function bindEvents() {
+  dom.editModeBtn.addEventListener("click", toggleEditMode);
   dom.addTabBtn.addEventListener("click", addTab);
   dom.editTabBtn.addEventListener("click", renameActiveTab);
   dom.duplicateTabBtn.addEventListener("click", duplicateActiveTab);
@@ -224,9 +228,26 @@ function getTabStats(tab) {
 }
 
 function render() {
+  renderEditMode();
   renderAuth();
   renderTabs();
   renderActiveTab();
+}
+
+function toggleEditMode() {
+  isEditMode = !isEditMode;
+  render();
+}
+
+function renderEditMode() {
+  dom.appShell.classList.toggle("edit-mode", isEditMode);
+  dom.editModeBtn.classList.toggle("active", isEditMode);
+  dom.editModeBtn.setAttribute("aria-pressed", String(isEditMode));
+  dom.editModeBtn.setAttribute(
+    "aria-label",
+    isEditMode ? "Bewerkmodus uitzetten" : "Bewerkmodus aanzetten"
+  );
+  dom.editModeBtn.title = isEditMode ? "Bewerkmodus uitzetten" : "Bewerkmodus aanzetten";
 }
 
 function createAuthPanel() {
@@ -481,7 +502,7 @@ function renderCategory(category) {
           <h3>${escapeHtml(category.name)}</h3>
           <p>${subtitle}</p>
         </div>
-        <div class="category-actions">
+        <div class="category-actions edit-only">
           <button class="icon-button compact" type="button" data-action="add-item" aria-label="Item toevoegen" title="Item toevoegen">
             <svg class="icon"><use href="#icon-plus"></use></svg>
           </button>
@@ -516,7 +537,7 @@ function renderItem(entry, category, index) {
         </span>
         <span class="item-name">${escapeHtml(entry.name)}</span>
       </label>
-      <div class="item-actions">
+      <div class="item-actions edit-only">
         <button class="icon-button compact mini" type="button" data-action="move-item-up" aria-label="Item omhoog" title="Item omhoog" ${isFirst ? "disabled" : ""}>
           <svg class="icon"><use href="#icon-up"></use></svg>
         </button>

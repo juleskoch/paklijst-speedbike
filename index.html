@@ -37,6 +37,11 @@
         <path d="m14 8 4 4-4 4" />
         <path d="M5 6h7M5 18h7" />
       </symbol>
+      <symbol id="icon-gear" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2.7v2.1M12 19.2v2.1M4.1 4.1l1.5 1.5M18.4 18.4l1.5 1.5M2.7 12h2.1M19.2 12h2.1M4.1 19.9l1.5-1.5M18.4 5.6l1.5-1.5" />
+        <path d="M8.3 3.8 7.1 6.1M15.7 20.2l1.2-2.3M3.8 15.7l2.3 1.2M20.2 8.3l-2.3-1.2" />
+      </symbol>
       <symbol id="icon-pencil" viewBox="0 0 24 24">
         <path d="m4.8 16.7-.7 3.2 3.2-.7L18.8 7.7a2.2 2.2 0 0 0 0-3.1 2.2 2.2 0 0 0-3.1 0Z" />
         <path d="m14.4 5.9 3.7 3.7" />
@@ -62,11 +67,14 @@
           <h1>Paklijst</h1>
         </div>
         <div class="top-actions">
-          <button class="icon-button filled green" id="addCategoryBtn" type="button" aria-label="Categorie toevoegen" title="Categorie toevoegen">
+          <button class="icon-button filled green edit-only" id="addCategoryBtn" type="button" aria-label="Categorie toevoegen" title="Categorie toevoegen">
             <span class="button-code">+C</span>
           </button>
-          <button class="icon-button filled" id="addTabBtn" type="button" aria-label="Tabblad toevoegen" title="Tabblad toevoegen">
+          <button class="icon-button filled edit-only" id="addTabBtn" type="button" aria-label="Tabblad toevoegen" title="Tabblad toevoegen">
             <span class="button-code">+T</span>
+          </button>
+          <button class="icon-button" id="editModeBtn" type="button" aria-label="Bewerkmodus aanzetten" title="Bewerkmodus" aria-pressed="false">
+            <svg class="icon"><use href="#icon-gear"></use></svg>
           </button>
         </div>
       </header>
@@ -81,7 +89,7 @@
             <h2 id="activeTabTitle"></h2>
             <p id="progressText"></p>
           </div>
-          <div class="summary-actions">
+          <div class="summary-actions edit-only">
             <button class="icon-button subtle" id="editTabBtn" type="button" aria-label="Tabblad hernoemen" title="Tabblad hernoemen">
               <svg class="icon"><use href="#icon-pencil"></use></svg>
             </button>
