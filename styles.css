@@ -143,6 +143,17 @@ button {
   background: var(--system-blue);
 }
 
+.icon-button.filled.green {
+  background: var(--system-green);
+}
+
+.button-code {
+  font-size: 0.95rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
 .icon-button.subtle {
   width: 2.35rem;
   height: 2.35rem;
@@ -540,6 +551,16 @@ button {
   font-weight: 700;
   cursor: pointer;
   transition: transform 150ms ease, opacity 150ms ease;
+}
+
+.primary-action.reset-action {
+  background: rgba(118, 118, 128, 0.14);
+  color: var(--system-blue);
+}
+
+.primary-action:disabled {
+  cursor: default;
+  opacity: 0.42;
 }
 
 .primary-action:active {
