@@ -40,6 +40,7 @@ const dom = {
   progressBar: document.getElementById("progressBar"),
   addTabBtn: document.getElementById("addTabBtn"),
   editTabBtn: document.getElementById("editTabBtn"),
+  duplicateTabBtn: document.getElementById("duplicateTabBtn"),
   deleteTabBtn: document.getElementById("deleteTabBtn"),
   resetChecksBtn: document.getElementById("resetChecksBtn"),
   addCategoryBtn: document.getElementById("addCategoryBtn"),
@@ -183,6 +184,7 @@ function saveState() {
 function bindEvents() {
   dom.addTabBtn.addEventListener("click", addTab);
   dom.editTabBtn.addEventListener("click", renameActiveTab);
+  dom.duplicateTabBtn.addEventListener("click", duplicateActiveTab);
   dom.deleteTabBtn.addEventListener("click", deleteActiveTab);
   dom.resetChecksBtn.addEventListener("click", resetActiveChecks);
   dom.addCategoryBtn.addEventListener("click", addCategory);
@@ -601,6 +603,38 @@ function renameActiveTab() {
     saveLabel: "Bewaar",
     onSubmit(name) {
       tab.name = name;
+      saveState();
+      render();
+    },
+  });
+}
+
+function duplicateActiveTab() {
+  const tab = getActiveTab();
+  openNameSheet({
+    title: "Tabblad dupliceren",
+    label: "Naam nieuw tabblad",
+    value: `Kopie van ${tab.name}`,
+    placeholder: "Naam",
+    saveLabel: "Maak kopie",
+    onSubmit(name) {
+      const newTab = {
+        id: createId(),
+        name,
+        categories: tab.categories.map((category) => ({
+          id: createId(),
+          name: category.name,
+          items: category.items.map((entry) => ({
+            id: createId(),
+            name: entry.name,
+            checked: false,
+          })),
+        })),
+      };
+
+      const activeIndex = state.tabs.findIndex((entry) => entry.id === tab.id);
+      state.tabs.splice(activeIndex + 1, 0, newTab);
+      state.activeTabId = newTab.id;
       saveState();
       render();
     },
