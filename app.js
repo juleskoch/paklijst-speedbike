@@ -51,9 +51,13 @@ const dom = {
   nameInput: document.getElementById("nameInput"),
   saveSheetBtn: document.getElementById("saveSheetBtn"),
   cancelSheetBtn: document.getElementById("cancelSheetBtn"),
+  moveDialog: document.getElementById("moveDialog"),
+  moveCategoryList: document.getElementById("moveCategoryList"),
+  cancelMoveBtn: document.getElementById("cancelMoveBtn"),
 };
 
 let sheetSubmit = null;
+let pendingMove = null;
 let user = null;
 let userDocRef = null;
 let unsubscribeCloud = null;
@@ -194,6 +198,9 @@ function bindEvents() {
   dom.cancelSheetBtn.addEventListener("click", closeSheet);
   dom.sheetDialog.addEventListener("click", closeSheetFromBackdrop);
   dom.sheetForm.addEventListener("submit", submitSheet);
+  dom.cancelMoveBtn.addEventListener("click", closeMoveSheet);
+  dom.moveDialog.addEventListener("click", closeMoveSheetFromBackdrop);
+  dom.moveCategoryList.addEventListener("click", completeCategoryMove);
 }
 
 function getActiveTab() {
@@ -488,15 +495,18 @@ function renderCategory(category) {
       </header>
       ${
         category.items.length
-          ? `<ul class="item-list">${category.items.map((entry) => renderItem(entry)).join("")}</ul>`
+          ? `<ul class="item-list">${category.items.map((entry, index) => renderItem(entry, category, index)).join("")}</ul>`
           : `<p class="empty-list">Geen items</p>`
       }
     </article>
   `;
 }
 
-function renderItem(entry) {
+function renderItem(entry, category, index) {
   const checked = entry.checked ? "checked" : "";
+  const isFirst = index === 0;
+  const isLast = index === category.items.length - 1;
+  const hasOtherCategory = getActiveTab().categories.length > 1;
   return `
     <li class="item-row" data-item-id="${entry.id}">
       <label class="item-check">
@@ -507,10 +517,19 @@ function renderItem(entry) {
         <span class="item-name">${escapeHtml(entry.name)}</span>
       </label>
       <div class="item-actions">
-        <button class="icon-button compact" type="button" data-action="rename-item" aria-label="Item hernoemen" title="Item hernoemen">
+        <button class="icon-button compact mini" type="button" data-action="move-item-up" aria-label="Item omhoog" title="Item omhoog" ${isFirst ? "disabled" : ""}>
+          <svg class="icon"><use href="#icon-up"></use></svg>
+        </button>
+        <button class="icon-button compact mini" type="button" data-action="move-item-down" aria-label="Item omlaag" title="Item omlaag" ${isLast ? "disabled" : ""}>
+          <svg class="icon"><use href="#icon-down"></use></svg>
+        </button>
+        <button class="icon-button compact mini" type="button" data-action="move-item-category" aria-label="Item naar categorie verplaatsen" title="Naar andere categorie" ${hasOtherCategory ? "" : "disabled"}>
+          <svg class="icon"><use href="#icon-move"></use></svg>
+        </button>
+        <button class="icon-button compact mini" type="button" data-action="rename-item" aria-label="Item hernoemen" title="Item hernoemen">
           <svg class="icon"><use href="#icon-pencil"></use></svg>
         </button>
-        <button class="icon-button compact danger" type="button" data-action="delete-item" aria-label="Item verwijderen" title="Item verwijderen">
+        <button class="icon-button compact mini danger" type="button" data-action="delete-item" aria-label="Item verwijderen" title="Item verwijderen">
           <svg class="icon"><use href="#icon-trash"></use></svg>
         </button>
       </div>
@@ -553,6 +572,15 @@ function handleCategoryClick(event) {
       break;
     case "delete-item":
       if (entry) deleteItem(category, entry);
+      break;
+    case "move-item-up":
+      if (entry) moveItemWithinCategory(category, entry, -1);
+      break;
+    case "move-item-down":
+      if (entry) moveItemWithinCategory(category, entry, 1);
+      break;
+    case "move-item-category":
+      if (entry) openMoveItemSheet(category, entry);
       break;
   }
 }
@@ -747,6 +775,86 @@ function deleteItem(category, entry) {
   category.items = category.items.filter((candidate) => candidate.id !== entry.id);
   saveState();
   render();
+}
+
+function moveItemWithinCategory(category, entry, direction) {
+  const index = category.items.findIndex((candidate) => candidate.id === entry.id);
+  const nextIndex = index + direction;
+  if (index < 0 || nextIndex < 0 || nextIndex >= category.items.length) return;
+
+  const nextEntry = category.items[nextIndex];
+  category.items[nextIndex] = entry;
+  category.items[index] = nextEntry;
+  saveState();
+  render();
+}
+
+function openMoveItemSheet(category, entry) {
+  const tab = getActiveTab();
+  const targets = tab.categories.filter((candidate) => candidate.id !== category.id);
+  if (!targets.length) return;
+
+  pendingMove = {
+    sourceCategoryId: category.id,
+    itemId: entry.id,
+  };
+  dom.moveCategoryList.innerHTML = targets
+    .map(
+      (target) => `
+        <button class="move-category-option" type="button" data-target-category-id="${target.id}">
+          <span>${escapeHtml(target.name)}</span>
+          <small>${target.items.length} ${target.items.length === 1 ? "item" : "items"}</small>
+        </button>
+      `
+    )
+    .join("");
+
+  if (typeof dom.moveDialog.showModal === "function") {
+    dom.moveDialog.showModal();
+  } else {
+    dom.moveDialog.setAttribute("open", "");
+  }
+}
+
+function completeCategoryMove(event) {
+  const button = event.target.closest("[data-target-category-id]");
+  if (!button || !pendingMove) return;
+
+  const tab = getActiveTab();
+  const sourceCategory = tab.categories.find((category) => category.id === pendingMove.sourceCategoryId);
+  const targetCategory = tab.categories.find((category) => category.id === button.dataset.targetCategoryId);
+  if (!sourceCategory || !targetCategory) {
+    closeMoveSheet();
+    return;
+  }
+
+  const itemIndex = sourceCategory.items.findIndex((entry) => entry.id === pendingMove.itemId);
+  if (itemIndex < 0) {
+    closeMoveSheet();
+    return;
+  }
+
+  const [entry] = sourceCategory.items.splice(itemIndex, 1);
+  targetCategory.items.push(entry);
+  closeMoveSheet();
+  saveState();
+  render();
+}
+
+function closeMoveSheet() {
+  pendingMove = null;
+  dom.moveCategoryList.innerHTML = "";
+  if (dom.moveDialog.open) {
+    dom.moveDialog.close();
+  } else {
+    dom.moveDialog.removeAttribute("open");
+  }
+}
+
+function closeMoveSheetFromBackdrop(event) {
+  if (event.target === dom.moveDialog) {
+    closeMoveSheet();
+  }
 }
 
 function registerServiceWorker() {

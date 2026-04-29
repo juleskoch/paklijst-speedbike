@@ -26,6 +26,17 @@
         <rect x="8" y="8" width="11" height="11" rx="2" />
         <path d="M5 15V6.8A1.8 1.8 0 0 1 6.8 5H15" />
       </symbol>
+      <symbol id="icon-up" viewBox="0 0 24 24">
+        <path d="m7 14 5-5 5 5" />
+      </symbol>
+      <symbol id="icon-down" viewBox="0 0 24 24">
+        <path d="m7 10 5 5 5-5" />
+      </symbol>
+      <symbol id="icon-move" viewBox="0 0 24 24">
+        <path d="M5 12h13" />
+        <path d="m14 8 4 4-4 4" />
+        <path d="M5 6h7M5 18h7" />
+      </symbol>
       <symbol id="icon-pencil" viewBox="0 0 24 24">
         <path d="m4.8 16.7-.7 3.2 3.2-.7L18.8 7.7a2.2 2.2 0 0 0 0-3.1 2.2 2.2 0 0 0-3.1 0Z" />
         <path d="m14.4 5.9 3.7 3.7" />
@@ -111,6 +122,18 @@
           <input id="nameInput" name="name" type="text" autocomplete="off" />
         </label>
       </form>
+    </dialog>
+
+    <dialog class="sheet-dialog" id="moveDialog">
+      <div class="sheet">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-header">
+          <button class="text-button" id="cancelMoveBtn" type="button">Annuleer</button>
+          <h2>Verplaats item</h2>
+          <span></span>
+        </div>
+        <div class="move-category-list" id="moveCategoryList"></div>
+      </div>
     </dialog>
 
     <script type="module" src="app.js"></script>

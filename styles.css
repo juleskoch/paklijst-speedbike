@@ -166,6 +166,16 @@ button {
   background: transparent;
 }
 
+.icon-button.mini {
+  width: 1.95rem;
+  height: 1.95rem;
+}
+
+.icon-button.mini .icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
 .icon-button.danger {
   color: var(--system-red);
 }
@@ -422,7 +432,7 @@ button {
 
 .item-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   min-height: 3.35rem;
   border-top: 1px solid var(--separator);
@@ -492,7 +502,44 @@ button {
 }
 
 .item-actions {
-  padding-right: 0.45rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.05rem;
+  padding: 0 0.45rem 0.5rem 3.1rem;
+}
+
+.move-category-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.move-category-option {
+  width: 100%;
+  min-height: 3.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid rgba(60, 60, 67, 0.12);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--label);
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.move-category-option span {
+  min-width: 0;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.move-category-option small {
+  flex: 0 0 auto;
+  color: var(--secondary-label);
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .empty-list {
@@ -674,5 +721,13 @@ button {
 
   .action-bar {
     border-radius: 0 0 8px 8px;
+  }
+
+  .item-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .item-actions {
+    padding: 0 0.45rem 0 0;
   }
 }
