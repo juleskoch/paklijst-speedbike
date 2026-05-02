@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   setPersistence,
   signInWithEmailAndPassword,
   signOut,
@@ -274,6 +275,7 @@ function createAuthPanel() {
       <div class="auth-buttons">
         <button class="auth-button primary" type="submit" data-auth-action="login">Log in</button>
         <button class="auth-button" type="button" id="signupBtn">Account maken</button>
+        <button class="auth-button" type="button" id="changePasswordBtn" hidden>Wachtwoord</button>
         <button class="auth-button" type="button" id="logoutBtn" hidden>Log uit</button>
       </div>
       <p class="auth-message" id="authMessage" aria-live="polite"></p>
@@ -290,6 +292,7 @@ function createAuthPanel() {
   dom.signupBtn = panel.querySelector("#signupBtn");
   dom.logoutBtn = panel.querySelector("#logoutBtn");
   dom.authMessage = panel.querySelector("#authMessage");
+  dom.changePasswordBtn = panel.querySelector("#changePasswordBtn");
 }
 
 function bindAuthEvents() {
@@ -298,6 +301,7 @@ function bindAuthEvents() {
     login();
   });
   dom.signupBtn.addEventListener("click", signup);
+  dom.changePasswordBtn.addEventListener("click", sendPasswordChangeEmail);
   dom.logoutBtn.addEventListener("click", logout);
 }
 
@@ -425,6 +429,26 @@ async function logout() {
   await signOut(auth);
 }
 
+async function sendPasswordChangeEmail() {
+  if (!user?.email) {
+    authMessage = "Geen e-mailadres gevonden voor dit account.";
+    renderAuth();
+    return;
+  }
+
+  authMessage = "";
+  setAuthBusy(true);
+  try {
+    await sendPasswordResetEmail(auth, user.email);
+    authMessage = `Wachtwoordmail verstuurd naar ${user.email}.`;
+  } catch (error) {
+    authMessage = getFriendlyAuthError(error);
+  } finally {
+    setAuthBusy(false);
+    renderAuth();
+  }
+}
+
 function setAuthBusy(isBusy) {
   dom.authForm.querySelectorAll("button, input").forEach((element) => {
     element.disabled = isBusy;
@@ -446,6 +470,7 @@ function renderAuth() {
     field.hidden = loggedIn;
   });
   dom.signupBtn.hidden = loggedIn;
+  dom.changePasswordBtn.hidden = !loggedIn;
   dom.logoutBtn.hidden = !loggedIn;
   dom.authForm.querySelector("[data-auth-action='login']").hidden = loggedIn;
   dom.authMessage.textContent = authMessage;
@@ -493,14 +518,17 @@ function renderActiveTab() {
   }
 
   dom.categories.innerHTML = tab.categories
-    .map((category) => renderCategory(category))
+    .map((category, index) => renderCategory(category, index))
     .join("");
 }
 
-function renderCategory(category) {
+function renderCategory(category, index) {
   const checked = category.items.filter((entry) => entry.checked).length;
   const total = category.items.length;
   const subtitle = total ? `${checked} van ${total} klaar` : "Nog geen items";
+  const categoryCount = getActiveTab().categories.length;
+  const isFirst = index === 0;
+  const isLast = index === categoryCount - 1;
 
   return `
     <article class="category" data-category-id="${category.id}">
@@ -510,6 +538,12 @@ function renderCategory(category) {
           <p>${subtitle}</p>
         </div>
         <div class="category-actions edit-only">
+          <button class="icon-button compact" type="button" data-action="move-category-up" aria-label="Categorie omhoog" title="Categorie omhoog" ${isFirst ? "disabled" : ""}>
+            <svg class="icon"><use href="#icon-up"></use></svg>
+          </button>
+          <button class="icon-button compact" type="button" data-action="move-category-down" aria-label="Categorie omlaag" title="Categorie omlaag" ${isLast ? "disabled" : ""}>
+            <svg class="icon"><use href="#icon-down"></use></svg>
+          </button>
           <button class="icon-button compact" type="button" data-action="add-item" aria-label="Item toevoegen" title="Item toevoegen">
             <svg class="icon"><use href="#icon-plus"></use></svg>
           </button>
@@ -594,6 +628,12 @@ function handleCategoryClick(event) {
       break;
     case "delete-category":
       deleteCategory(category);
+      break;
+    case "move-category-up":
+      moveCategory(category, -1);
+      break;
+    case "move-category-down":
+      moveCategory(category, 1);
       break;
     case "rename-item":
       if (entry) renameItem(category, entry);
@@ -778,6 +818,19 @@ function deleteCategory(category) {
   render();
 }
 
+function moveCategory(category, direction) {
+  const tab = getActiveTab();
+  const index = tab.categories.findIndex((candidate) => candidate.id === category.id);
+  const nextIndex = index + direction;
+  if (index < 0 || nextIndex < 0 || nextIndex >= tab.categories.length) return;
+
+  const nextCategory = tab.categories[nextIndex];
+  tab.categories[nextIndex] = category;
+  tab.categories[index] = nextCategory;
+  saveState();
+  render();
+}
+
 function addItem(category) {
   openNameSheet({
     title: "Nieuw item",
@@ -919,6 +972,8 @@ function getFriendlyAuthError(error) {
       return "Kies een wachtwoord van minimaal 6 tekens.";
     case "auth/invalid-email":
       return "Vul een geldig e-mailadres in.";
+    case "auth/too-many-requests":
+      return "Te veel pogingen. Wacht even en probeer het later opnieuw.";
     case "permission-denied":
       return "Firebase-regels blokkeren dit nog. Controleer de Firestore-regels.";
     default:
