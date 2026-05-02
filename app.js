@@ -260,8 +260,8 @@ function createAuthPanel() {
   panel.className = "auth-panel";
   panel.innerHTML = `
     <div class="auth-status">
-      <h2 id="authTitle">Online opslag</h2>
-      <p id="authText">Log in om je lijst op je iPhone en laptop gelijk te houden.</p>
+      <h2 id="authTitle">Log in:</h2>
+      <p id="authText" hidden></p>
     </div>
     <form class="auth-form" id="authForm">
       <label class="auth-field">
@@ -275,8 +275,8 @@ function createAuthPanel() {
       <div class="auth-buttons">
         <button class="auth-button primary" type="submit" data-auth-action="login">Log in</button>
         <button class="auth-button" type="button" id="signupBtn">Account maken</button>
-        <button class="auth-button" type="button" id="changePasswordBtn" hidden>Wachtwoord</button>
         <button class="auth-button" type="button" id="logoutBtn" hidden>Log uit</button>
+        <button class="auth-button edit-only" type="button" id="changePasswordBtn" hidden>Wachtwoord wijzigen</button>
       </div>
       <p class="auth-message" id="authMessage" aria-live="polite"></p>
     </form>
@@ -460,10 +460,9 @@ function renderAuth() {
 
   const loggedIn = Boolean(user);
   dom.authPanel.classList.toggle("signed-in", loggedIn);
-  dom.authTitle.textContent = loggedIn ? "Online opgeslagen" : "Online opslag";
-  dom.authText.textContent = loggedIn
-    ? `${user.email} ${hasLoadedCloudOnce ? "is gesynchroniseerd." : "wordt geladen..."}`
-    : "Log in om je lijst op je iPhone en laptop gelijk te houden.";
+  dom.authTitle.textContent = loggedIn ? "Ingelogd:" : "Log in:";
+  dom.authText.hidden = !loggedIn;
+  dom.authText.textContent = loggedIn ? user.email : "";
   dom.emailInput.hidden = loggedIn;
   dom.passwordInput.hidden = loggedIn;
   dom.authForm.querySelectorAll(".auth-field").forEach((field) => {
