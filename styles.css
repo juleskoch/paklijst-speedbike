@@ -2,7 +2,7 @@
   color-scheme: light;
   --system-blue: #42858c;
   --system-green: #5da399;
-  --system-red: #35393c;
+  --system-red: #d64545;
   --system-orange: #63ccca;
   --background: #eef6f4;
   --surface: #ffffff;
@@ -152,11 +152,7 @@ button {
 
 .icon-button.filled {
   color: #fff;
-  background: var(--system-blue);
-}
-
-.icon-button.filled.green {
-  background: var(--system-green);
+  background: var(--label);
 }
 
 .icon-button.active {
@@ -165,6 +161,7 @@ button {
 }
 
 .button-code {
+  color: #fff;
   font-size: 0.95rem;
   font-weight: 800;
   line-height: 1;
@@ -202,7 +199,8 @@ button {
   opacity: 0.38;
 }
 
-.app-shell:not(.edit-mode) .edit-only {
+.app-shell:not(.edit-mode) .edit-only,
+[hidden] {
   display: none;
 }
 
@@ -253,6 +251,7 @@ button {
 
 .tab-name {
   min-width: 0;
+  color: var(--label);
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 0.95rem;
@@ -446,6 +445,7 @@ button {
 
 .category-title h3 {
   margin: 0;
+  color: var(--label);
   font-size: 1.05rem;
   line-height: 1.2;
   font-weight: 700;
