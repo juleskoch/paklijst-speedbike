@@ -64,6 +64,7 @@ const dom = {
 let sheetSubmit = null;
 let pendingMove = null;
 let isEditMode = false;
+let isProfileMenuOpen = false;
 let user = null;
 let userDocRef = null;
 let unsubscribeCloud = null;
@@ -241,6 +242,9 @@ function render() {
 
 function toggleEditMode() {
   isEditMode = !isEditMode;
+  if (!isEditMode) {
+    isProfileMenuOpen = false;
+  }
   render();
 }
 
@@ -261,7 +265,12 @@ function createAuthPanel() {
   panel.innerHTML = `
     <div class="auth-status">
       <h2 id="authTitle">Log in:</h2>
-      <p id="authText" hidden></p>
+      <div class="auth-identity">
+        <p id="authText" hidden></p>
+        <button class="icon-button compact profile-edit-button edit-only" id="profileEditBtn" type="button" aria-label="Profielinstellingen" title="Profielinstellingen" aria-pressed="false" hidden>
+          <svg class="icon"><use href="#icon-pencil"></use></svg>
+        </button>
+      </div>
     </div>
     <form class="auth-form" id="authForm">
       <label class="auth-field">
@@ -293,6 +302,7 @@ function createAuthPanel() {
   dom.logoutBtn = panel.querySelector("#logoutBtn");
   dom.authMessage = panel.querySelector("#authMessage");
   dom.changePasswordBtn = panel.querySelector("#changePasswordBtn");
+  dom.profileEditBtn = panel.querySelector("#profileEditBtn");
 }
 
 function bindAuthEvents() {
@@ -301,6 +311,7 @@ function bindAuthEvents() {
     login();
   });
   dom.signupBtn.addEventListener("click", signup);
+  dom.profileEditBtn.addEventListener("click", toggleProfileMenu);
   dom.changePasswordBtn.addEventListener("click", sendPasswordChangeEmail);
   dom.logoutBtn.addEventListener("click", logout);
 }
@@ -459,6 +470,9 @@ function renderAuth() {
   if (!dom.authPanel) return;
 
   const loggedIn = Boolean(user);
+  if (!loggedIn || !isEditMode) {
+    isProfileMenuOpen = false;
+  }
   dom.authPanel.classList.toggle("signed-in", loggedIn);
   dom.authTitle.textContent = loggedIn ? "Ingelogd:" : "Log in:";
   dom.authText.hidden = !loggedIn;
@@ -469,10 +483,19 @@ function renderAuth() {
     field.hidden = loggedIn;
   });
   dom.signupBtn.hidden = loggedIn;
-  dom.changePasswordBtn.hidden = !loggedIn;
+  dom.profileEditBtn.hidden = !loggedIn || !isEditMode;
+  dom.profileEditBtn.classList.toggle("active", isProfileMenuOpen);
+  dom.profileEditBtn.setAttribute("aria-pressed", String(isProfileMenuOpen));
+  dom.changePasswordBtn.hidden = !loggedIn || !isProfileMenuOpen;
   dom.logoutBtn.hidden = !loggedIn;
   dom.authForm.querySelector("[data-auth-action='login']").hidden = loggedIn;
   dom.authMessage.textContent = authMessage;
+}
+
+function toggleProfileMenu() {
+  if (!user || !isEditMode) return;
+  isProfileMenuOpen = !isProfileMenuOpen;
+  renderAuth();
 }
 
 function renderTabs() {
