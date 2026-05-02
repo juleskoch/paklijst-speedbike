@@ -113,6 +113,11 @@ button {
   gap: 0.5rem;
 }
 
+.summary-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .icon-button {
   display: inline-grid;
   place-items: center;

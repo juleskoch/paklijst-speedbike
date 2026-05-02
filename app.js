@@ -41,6 +41,8 @@ const dom = {
   progressBar: document.getElementById("progressBar"),
   editModeBtn: document.getElementById("editModeBtn"),
   addTabBtn: document.getElementById("addTabBtn"),
+  moveTabLeftBtn: document.getElementById("moveTabLeftBtn"),
+  moveTabRightBtn: document.getElementById("moveTabRightBtn"),
   editTabBtn: document.getElementById("editTabBtn"),
   duplicateTabBtn: document.getElementById("duplicateTabBtn"),
   deleteTabBtn: document.getElementById("deleteTabBtn"),
@@ -191,6 +193,8 @@ function saveState() {
 function bindEvents() {
   dom.editModeBtn.addEventListener("click", toggleEditMode);
   dom.addTabBtn.addEventListener("click", addTab);
+  dom.moveTabLeftBtn.addEventListener("click", () => moveActiveTab(-1));
+  dom.moveTabRightBtn.addEventListener("click", () => moveActiveTab(1));
   dom.editTabBtn.addEventListener("click", renameActiveTab);
   dom.duplicateTabBtn.addEventListener("click", duplicateActiveTab);
   dom.deleteTabBtn.addEventListener("click", deleteActiveTab);
@@ -472,6 +476,9 @@ function renderActiveTab() {
     ? `${stats.checked} van ${stats.total} afgevinkt`
     : "Nog geen items";
   dom.progressBar.style.width = `${stats.percent}%`;
+  const activeIndex = state.tabs.findIndex((entry) => entry.id === tab.id);
+  dom.moveTabLeftBtn.disabled = activeIndex <= 0;
+  dom.moveTabRightBtn.disabled = activeIndex === -1 || activeIndex >= state.tabs.length - 1;
   dom.deleteTabBtn.disabled = state.tabs.length < 2;
   dom.resetChecksBtn.disabled = stats.checked === 0;
 
@@ -688,6 +695,18 @@ function duplicateActiveTab() {
       render();
     },
   });
+}
+
+function moveActiveTab(direction) {
+  const activeIndex = state.tabs.findIndex((entry) => entry.id === state.activeTabId);
+  const nextIndex = activeIndex + direction;
+  if (activeIndex < 0 || nextIndex < 0 || nextIndex >= state.tabs.length) return;
+
+  const activeTab = state.tabs[activeIndex];
+  state.tabs[activeIndex] = state.tabs[nextIndex];
+  state.tabs[nextIndex] = activeTab;
+  saveState();
+  render();
 }
 
 function deleteActiveTab() {

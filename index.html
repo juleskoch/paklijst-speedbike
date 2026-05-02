@@ -32,6 +32,12 @@
       <symbol id="icon-down" viewBox="0 0 24 24">
         <path d="m7 10 5 5 5-5" />
       </symbol>
+      <symbol id="icon-left" viewBox="0 0 24 24">
+        <path d="m14 7-5 5 5 5" />
+      </symbol>
+      <symbol id="icon-right" viewBox="0 0 24 24">
+        <path d="m10 7 5 5-5 5" />
+      </symbol>
       <symbol id="icon-move" viewBox="0 0 24 24">
         <path d="M5 12h13" />
         <path d="m14 8 4 4-4 4" />
@@ -90,6 +96,12 @@
             <p id="progressText"></p>
           </div>
           <div class="summary-actions edit-only">
+            <button class="icon-button subtle" id="moveTabLeftBtn" type="button" aria-label="Tabblad naar links" title="Tabblad naar links">
+              <svg class="icon"><use href="#icon-left"></use></svg>
+            </button>
+            <button class="icon-button subtle" id="moveTabRightBtn" type="button" aria-label="Tabblad naar rechts" title="Tabblad naar rechts">
+              <svg class="icon"><use href="#icon-right"></use></svg>
+            </button>
             <button class="icon-button subtle" id="editTabBtn" type="button" aria-label="Tabblad hernoemen" title="Tabblad hernoemen">
               <svg class="icon"><use href="#icon-pencil"></use></svg>
             </button>
